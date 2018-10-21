@@ -3,17 +3,48 @@
 #include <future> // ASYNC, FUTURE
 #include <iostream>
 
+//Helper class for next and prev functions:
+class Index{
+private:
+	int row_ind;
+	int col_ind;
+	bool is_valid;
+public:
+	int getRowInd(){return row_ind;}
+	int getColInd(){return col_ind;}
+	bool getIsValid(){return is_valid;}
+
+	void setRowInd(int new_ind){row_ind = new_ind;}
+	void setColInd(int new_ind){col_ind = new_ind;}
+	void setIsValid(bool new_val){is_valid = new_val;}
+
+	Index(int row, int col, bool valid): row_ind(row), col_ind(col), is_valid(valid){};
+};
+
 //Inplements a sudoku:
 class Sudoku{
 
 private:
     unsigned int _size; //sudoku's size
     std::vector<std::vector<unsigned int>> _matrix; //contains sudoku's matrix
+	std::vector<std::vector<unsigned int>> _solution; //contains the solution if solveable
 
 public:
 	//Getters:
     unsigned int getSize(){ return _size;}
     std::vector<std::vector<unsigned int>> getMatrix(){return _matrix;}
+	std::vector<std::vector<unsigned int>> getSolutionMatrix(){return _solution;}
+
+	//Setters:
+	void initializeSolutionMatrix(int size){
+		this->_solution.resize(size);
+		for(int i = 0; i < size; ++i){
+			for(int j = 0; j < size; ++j){
+				this->_solution[i].push_back(0);
+			}
+		}
+	}
+	void setSolutionMatrix(int i, int j, unsigned int value){_solution[i][j] = value;}
 
 	//Constructors:
 	Sudoku(unsigned int sudoku_size, std::vector<std::vector<unsigned int>> sudoku_matrix)
@@ -33,7 +64,87 @@ public:
 		}
 	}
 
+	//Prints the solved sudoku on the screen:
+	void printSolutionSudoku(){
+		for(int i = 0; i < this->_solution.size(); ++i){
+			for(int j = 0; j < this->_solution.size(); ++j){
+				std::cout<< _solution[i][j] << " ";
+			}
+			std::cout<<"\n";
+		}
+	}
+
+//---------Functions to help solving the sudoku---------------
+
+	//Find out if a sudoku is valid
+	bool isValid(){
+		for(int i = 0; i < this->getSize(); ++i){
+			for(int j = 0; j < this->getSize(); ++j){
+				unsigned int actual = this->getMatrix()[i][j];
+				if(actual != 0){
+					for(int col = j+1; col < this->getSize(); ++col){
+						if(this->getMatrix()[i][col] == actual)	return false;
+					}
+					for(int row = i+1; row < this->getSize(); ++row){
+						if(this->getMatrix()[row][j] == actual) return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	//Recursive function of solveing - returns true if solved the sudoku, false otherwise:
+	bool solveSudoku(int row_ind, int col_ind){
+		//TODO
+	}
+
+	//Returns true if there's next solveable element and get it; otherwise returns false:
+	Index getNext(int row_ind, int col_ind){
+
+		while(row_ind < this->getSize() || col_ind < this->getSize()){
+			if(col_ind < this->getSize()){
+				++col_ind;
+			}else if(row_ind < this->getSize()){
+				col_ind = 0;
+				++row_ind;
+			}else{
+				return Index(row_ind, col_ind, false);
+			}
+			if(this->getMatrix()[row_ind][col_ind] == 0){
+				return Index(row_ind, col_ind, true);
+			}else{
+				this->setSolutionMatrix(row_ind, col_ind, this->getMatrix()[row_ind][col_ind]);
+			}
+		}
+		return Index(row_ind, col_ind, false);
+	}
+
+
 };
+
+
+//Intialize the solveing and invites solveSudoku:
+std::vector<std::vector<unsigned int>> initSolveSudoku(Sudoku sudoku){
+
+	//Check if the sudoku can be solved:
+	if(!sudoku.isValid()){
+		//if can't be solved return it:
+		return sudoku.getMatrix();
+	}
+
+	//Initialize the result matrix's elements to 0:
+	sudoku.initializeSolutionMatrix(sudoku.getSize());
+
+	//Initialize indexes and solution's matrix:
+	int row_ind = 0;
+	int col_ind = 0;
+	sudoku.setSolutionMatrix(0, 0, sudoku.getMatrix()[0][0]);
+
+	sudoku.solveSudoku(row_ind , col_ind);
+
+	return sudoku.getSolutionMatrix();
+}
 
 //Reads a sudoku from file
 Sudoku readSudoku(std::ifstream& input){
@@ -50,46 +161,14 @@ Sudoku readSudoku(std::ifstream& input){
 	return Sudoku(n, matrix);
 }
 
-//Find out if a sudoku is valid
-	bool isValid(Sudoku& sudoku){
-		for(int i = 0; i < sudoku.getSize(); ++i){
-			for(int j = 0; j < sudoku.getSize(); ++j){
-				unsigned int actual = sudoku.getMatrix()[i][j];
-				//std::cout<< actual <<std::endl;
-				if(actual != 0){
-					//std::cout<< "This isn't 0"<<std::endl;
-					for(int col = j+1; col < sudoku.getSize(); ++col){
-						if(sudoku.getMatrix()[i][col] == actual)	return false;
-					}
-					for(int row = i+1; row < sudoku.getSize(); ++row){
-						if(sudoku.getMatrix()[row][j] == actual) return false;
-					}
-				}
-			}
-		}
-		return true;
-	}
-
 //Writes a sudoku to a file:
 void writeSudoku(std::ofstream& output, const std::vector<std::vector<unsigned int>>& matrix){
 	for(int i = 0; i < matrix.size(); ++i){
 		for(int j = 0; j < matrix[i].size(); ++j){
-			std::cout<< matrix[i][j] << " ";
 			output << matrix[i][j] << " ";
 		}
-		std::cout<< "\n";
 		output << "\n";
 	}
-}
-
-//Solves a sudoku:
-std::vector<std::vector<unsigned int>> solveSudoku(Sudoku& sudoku){
-	std::vector<std::vector<unsigned int>> solved_sudoku;
-	if(!isValid(sudoku)){
-		std::cout<< "it isn't ok'" <<std::endl;
-		return sudoku.getMatrix();
-	}
-	return solved_sudoku;
 }
 
 int main()
@@ -106,9 +185,8 @@ int main()
 
 	for(int i = 0; i < sudoku_count; ++i){
 		actual = readSudoku(input);
-		//actual.printSudoku();
-		//results.push_back(std::async(std::launch::async, solveSudoku, std::ref(actual)));
-		solveSudoku(actual);
+		//results.push_back(std::async(std::launch::async, initSolveSudoku, actual));
+		initSolveSudoku(actual);
 	}
 
 	input.close();
