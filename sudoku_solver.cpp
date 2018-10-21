@@ -96,28 +96,13 @@ public:
 
 	//Recursive function of solveing - returns true if solved the sudoku, false otherwise:
 	bool solveSudoku(int row_ind, int col_ind){
-		//TODO
+		this->printSudoku();
+		this->printSolutionSudoku();
 	}
 
 	//Returns true if there's next solveable element and get it; otherwise returns false:
 	Index getNext(int row_ind, int col_ind){
-
-		while(row_ind < this->getSize() || col_ind < this->getSize()){
-			if(col_ind < this->getSize()){
-				++col_ind;
-			}else if(row_ind < this->getSize()){
-				col_ind = 0;
-				++row_ind;
-			}else{
-				return Index(row_ind, col_ind, false);
-			}
-			if(this->getMatrix()[row_ind][col_ind] == 0){
-				return Index(row_ind, col_ind, true);
-			}else{
-				this->setSolutionMatrix(row_ind, col_ind, this->getMatrix()[row_ind][col_ind]);
-			}
-		}
-		return Index(row_ind, col_ind, false);
+		//TODO
 	}
 
 
