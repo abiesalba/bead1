@@ -96,15 +96,57 @@ public:
 
 	//Recursive function of solveing - returns true if solved the sudoku, false otherwise:
 	bool solveSudoku(int row_ind, int col_ind){
-		this->printSudoku();
-		this->printSolutionSudoku();
+		Index actual = this->getNext(row_ind, col_ind);
+	
+		while(actual.getIsValid()){
+			row_ind = actual.getRowInd();
+			col_ind = actual.getColInd();
+
+			std::cout<< "row: " << row_ind << " col: " << col_ind << " valid: " <<
+			actual.getIsValid() << " value: " << this->getMatrix()[row_ind][col_ind] <<std::endl;
+
+			actual = this->getNext(row_ind, col_ind);
+		}
+		std::cout<< "row: " << row_ind << " col: " << col_ind << " valid: " <<
+			actual.getIsValid() << " value: " << this->getMatrix()[row_ind][col_ind] <<std::endl;
+
+		std::cout<< "Start to prev:" <<std::endl;
+		actual = this->getPrev(row_ind, col_ind);
+		
+		while(actual.getIsValid()){
+			row_ind = actual.getRowInd();
+			col_ind = actual.getColInd();
+
+			std::cout<< "row: " << row_ind << " col: " << col_ind << " valid: " <<
+			actual.getIsValid() << " value: " << this->getMatrix()[row_ind][col_ind] <<std::endl;
+
+			actual = this->getPrev(row_ind, col_ind);
+		}
 	}
 
-	//Returns true if there's next solveable element and get it; otherwise returns false:
+	//Returns the next elemnt's index and true if it's exists and false if not:
 	Index getNext(int row_ind, int col_ind){
-		//TODO
+	
+		if(col_ind < this->getSize()-1){
+			return Index(row_ind, ++col_ind, true);
+		}else if(row_ind < this->getSize()-1){
+			return Index(++row_ind, 0, true);
+		}else{
+			return Index(row_ind, col_ind, false);
+		}
 	}
 
+	//Returns the previous elemnt's index and true if it's exists and false if not:
+	Index getPrev(int row_ind, int col_ind){
+
+		if(col_ind > 0){
+			return Index(row_ind, col_ind-1, true);
+		}else if(row_ind > 0){
+			return Index(row_ind-1, this->getSize()-1, true);
+		}else{
+			return Index(row_ind, col_ind, false);
+		}
+	}
 
 };
 
@@ -158,7 +200,7 @@ void writeSudoku(std::ofstream& output, const std::vector<std::vector<unsigned i
 
 int main()
 {
-	std::ifstream input("input.txt");
+	std::ifstream input("input1.txt");
 
 	//Read the number of sudokus:
 	unsigned int sudoku_count;
